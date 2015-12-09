@@ -44,19 +44,22 @@ public class ChooseAreaActivity extends Activity {
 	private City selectedCity;
 	private CoolWeatherDB coolWeatherDB;
 
+	private boolean isFromWeatherActivity;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		if(prefs.getBoolean("city_selected", false)){
+		isFromWeatherActivity = getIntent().getBooleanExtra(
+				"from_weather_activity", false);
+		SharedPreferences prefs = PreferenceManager
+				.getDefaultSharedPreferences(this);
+		if (!isFromWeatherActivity && prefs.getBoolean("city_selected", false)) {
 			Intent intent = new Intent(this, WeatherActivity.class);
 			startActivity(intent);
 			finish();
 			return;
 		}
-		
-		
+
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.choose_area);
 		listView = (ListView) findViewById(R.id.list_view);
@@ -78,11 +81,13 @@ public class ChooseAreaActivity extends Activity {
 				} else if (currentLevel == LEVEL_CITY) {
 					selectedCity = cityList.get(position);
 					queryCounties();
-				} else if(currentLevel == LEVEL_COUNTY){
-					String countyCode = countyList.get(position).getCountyCode();
-					Intent intent = new Intent(ChooseAreaActivity.this,WeatherActivity.class);
+				} else if (currentLevel == LEVEL_COUNTY) {
+					String countyCode = countyList.get(position)
+							.getCountyCode();
+					Intent intent = new Intent(ChooseAreaActivity.this,
+							WeatherActivity.class);
 					intent.putExtra("county_code", countyCode);
-					startActivity(intent); 
+					startActivity(intent);
 					finish();
 				}
 			}
@@ -177,7 +182,7 @@ public class ChooseAreaActivity extends Activity {
 					// 当前选择的Province的id作为city的provinceId,实现Province和City两个表的关联
 					result = Utility.handleCitiesResponse(coolWeatherDB,
 							response, selectedProvince.getId());
-				} else if ("county".equals(type)) { 
+				} else if ("county".equals(type)) {
 					result = Utility.handleCountiesResponse(coolWeatherDB,
 							response, selectedCity.getId());
 				}
@@ -228,10 +233,14 @@ public class ChooseAreaActivity extends Activity {
 		} else if (currentLevel == LEVEL_CITY) {
 			queryProvinces();
 		} else {
+			if (isFromWeatherActivity) {
+				Intent intent = new Intent(this, WeatherActivity.class);
+				startActivity(intent);
+			}
 			finish();
 		}
 	}
-	
+
 	/**
 	 * 显示进度对话框
 	 */
